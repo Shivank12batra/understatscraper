@@ -14,7 +14,7 @@ seasons = []
 date = 0
 
 while True:
-    if page > 18000:
+    if page > 18210:
         break
     base_url = 'https://understat.com/match/{}'
     url = base_url.format(page)
@@ -39,4 +39,4 @@ while True:
 
 df = pd.DataFrame({'match_id':match_ids, 'competition':competition, 'year':seasons})
 
-df.to_csv('Understat_match_ids.csv')
+df.to_csv('Understat_match_ids.csv', index=False)
