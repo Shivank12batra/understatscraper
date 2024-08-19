@@ -7,9 +7,9 @@ A Python module to scrape football shots data from understat.com.
 #import required packages
 import pandas as pd
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 import json
 import bs4
-from pandas.io.json import json_normalize
 
 class Understat:
     """
@@ -24,7 +24,6 @@ class Understat:
         base_url (str): common url for all the games available on understat.com. Defaults to "https://understat.com/match/{}"
         """
         self.base_url = base_url
-        self.chrome_driver_path = r'C:\Users\shivank\Desktop\New folder\selenium\chromedriver.exe'
 
 
     def single_match(self, page):
@@ -35,20 +34,23 @@ class Understat:
         page (int): match id of the game for which the user wants the shots data.
         """
         url = self.base_url.format(page)
+
+        service = Service()
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
-        driver = webdriver.Chrome(executable_path=self.chrome_driver_path, chrome_options=options)
+        driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
+
         soup = bs4.BeautifulSoup(driver.page_source)
         scripts = soup.find_all('script')
-        strings = str(scripts[3])
+        strings = str(scripts[4])
         ind_start = strings.index("('")+2
         ind_end = strings.index("')")
         json_data = strings[ind_start:ind_end]
         json_data = json_data.encode('utf8').decode('unicode escape')
         data = json.loads(json_data)
-        home_df = json_normalize(data['h'],sep='_')
-        away_df = json_normalize(data['a'],sep='_')
+        home_df = pd.json_normalize(data['h'],sep='_')
+        away_df = pd.json_normalize(data['a'],sep='_')
         combined = pd.concat([home_df, away_df])
         driver.close()
         return combined
